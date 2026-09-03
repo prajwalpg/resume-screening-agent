@@ -12,12 +12,21 @@ machine + backend combination.
 from typing import List, Sequence
 
 
+import os
+
+
 class SimilarityEngine:
     """Computes cosine similarity between a JD and many resumes."""
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2", prefer_transformers: bool = True) -> None:
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2", prefer_transformers: Optional[bool] = None) -> None:
         self.backend = "tfidf-cosine (fallback)"
         self._model = None
+
+        if prefer_transformers is None:
+            if os.getenv("RENDER") or os.getenv("DISABLE_TRANSFORMERS", "").lower() in ("true", "1", "yes"):
+                prefer_transformers = False
+            else:
+                prefer_transformers = True
 
         if prefer_transformers:
             try:

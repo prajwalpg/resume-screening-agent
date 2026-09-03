@@ -19,7 +19,7 @@ numpy>=1.24.0
 
 # NLP / semantic similarity
 scikit-learn>=1.3.0
-sentence-transformers>=2.6.0
+# sentence-transformers>=2.6.0  # Commented out to prevent PyTorch OOM on Render 512MB RAM free tier
 
 # Optional LLM layer (OpenAI-compatible: OpenAI / Groq / Ollama / ...)
 openai>=1.30.0

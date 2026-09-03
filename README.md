@@ -9,7 +9,7 @@ The system combines **deterministic rule-based scoring, NLP semantic similarity,
 ## 🌐 Live Demo
 
 🚀 **Live Application:**
-https://resume-screening-agent-one.vercel.app
+https://resume-screening-agent-roan.vercel.app/
 
 📦 **GitHub Repository:**
 https://github.com/prajwalpg/resume-screening-agent

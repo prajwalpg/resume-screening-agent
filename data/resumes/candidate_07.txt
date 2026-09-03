@@ -1,0 +1,26 @@
+VIKRAM JOSHI
+Email: vikram.joshi@example.com | Phone: +91 91234 67890
+Location: Mumbai, India
+
+PROFESSIONAL SUMMARY
+Frontend developer with 1 year of experience building responsive web applications in React.
+
+TECHNICAL SKILLS
+- Languages: JavaScript, HTML, CSS
+- Frameworks: React, Node.js, Express.js
+- Databases: MongoDB
+- Tools: Git, Figma, VS Code
+
+WORK EXPERIENCE
+Frontend Developer, PixelCraft Studios (2024 - Present)
+- Built React components for client dashboards
+- Integrated REST endpoints and improved page load times
+
+PROJECTS
+- Personal portfolio site with React and CSS animations
+
+EDUCATION
+- BCA in Computer Applications, Mumbai University (2021 - 2024)
+
+CERTIFICATIONS
+- None

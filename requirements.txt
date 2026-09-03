@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# AI Resume Screening Agent -- Python dependencies
+#
+# NOTE: sentence-transformers pulls in PyTorch (~2 GB). The agent treats it as
+# an optional runtime dependency: if it cannot be installed or the model
+# cannot be downloaded, the similarity engine automatically falls back to
+# TF-IDF + cosine similarity (scikit-learn), which is fully deterministic.
+# To skip it, simply comment the line below out.
+# ---------------------------------------------------------------------------
+
+# Core document parsing
+pymupdf>=1.24.0
+python-docx>=1.1.2
+
+# Data handling & validation
+pydantic>=2.6.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# NLP / semantic similarity
+scikit-learn>=1.3.0
+sentence-transformers>=2.6.0
+
+# Optional LLM layer (OpenAI-compatible: OpenAI / Groq / Ollama / ...)
+openai>=1.30.0
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=8.0.0

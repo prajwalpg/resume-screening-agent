@@ -1,0 +1,34 @@
+Job Title: Software Test Automation Engineer
+
+About the Role
+We are looking for a Software Test Automation Engineer to design, build and
+maintain automated test suites for our web applications and REST APIs. You
+will work with the development team in an agile environment to ensure product
+quality across every release.
+
+Responsibilities:
+- Design, develop and maintain automated test scripts using Python and Selenium
+- Build and run API test suites for REST services using Postman and Python
+- Integrate automated tests into CI/CD pipelines (Jenkins)
+- Perform regression, smoke and integration testing before every release
+- Write and maintain test plans, test cases and defect reports
+- Collaborate with developers to reproduce and resolve defects
+- Track quality metrics and report test coverage to stakeholders
+
+Required Skills:
+- Python (strong scripting skills)
+- Selenium WebDriver for web UI automation
+- API Testing (REST APIs, Postman or similar tools)
+- SQL for database validation
+- Git for version control
+
+Preferred Skills:
+- Pytest
+- Jenkins
+- Docker
+
+Minimum Experience:
+1+ year of hands-on test automation experience
+
+Education:
+Bachelor's degree in Computer Science, Information Technology or a related field.

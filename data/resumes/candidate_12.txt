@@ -1,0 +1,28 @@
+KARTHIK MENON
+Email: karthik.menon@example.com | Phone: +91 90909 90123
+Location: Coimbatore, India
+
+PROFESSIONAL SUMMARY
+QA engineer with 2 years of experience in Java-Selenium automation for enterprise applications.
+
+TECHNICAL SKILLS
+- Programming: Java, SQL
+- Automation: Selenium, TestNG, JUnit, Maven
+- Tools: Git, Jenkins, Jira, Agile
+
+WORK EXPERIENCE
+QA Engineer, ERPSoft (2023 - Present)
+- Maintains Selenium-TestNG regression suites for an ERP product
+- Validates backend data with SQL scripts
+
+QA Trainee, ERPSoft (2022 - 2023)
+- Executed smoke and regression cycles
+
+PROJECTS
+- TestNG suite refactor with retry analyzer and extent reports
+
+EDUCATION
+- B.Tech in Electronics and Communication Engineering, Anna University (2018 - 2022)
+
+CERTIFICATIONS
+- None

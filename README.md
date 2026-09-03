@@ -1,174 +1,195 @@
-# AI Resume Screening & Candidate Ranking Agent
+# 🤖 AI Resume Screening & Candidate Ranking Agent
 
-An AI-powered recruitment agent that analyzes multiple resumes against a job
-description, calculates **explainable candidate relevance scores** using
-deterministic weighted criteria + NLP semantic similarity, and produces a
-**ranked shortlist** with strengths, skill gaps and hiring recommendations.
+An AI-powered recruitment platform that automatically analyzes resumes against a job description, extracts candidate information, calculates **explainable candidate-fit scores**, ranks candidates, identifies skill gaps, detects duplicate resumes, and generates hiring recommendations.
 
-```
-Job Description (PDF/TXT/DOCX)  +  Resume Folder (PDF/DOCX/TXT)
-              │                            │
-              ▼                            ▼
-       JD Processor                 Document Parser
-   (skills, requirements)      (PDF / DOCX / TXT -> text)
-              │                            │
-              │                   Information Extraction
-              │                  (Pydantic CandidateProfile)
-              │                            │
-              └──────────┬─────────────────┘
+The system combines **deterministic rule-based scoring, NLP semantic similarity, structured information extraction, and optional LLM capabilities** to provide a transparent and reproducible resume screening workflow.
+
+---
+
+## 🌐 Live Demo
+
+🚀 **Live Application:**
+https://resume-screening-agent-one.vercel.app
+
+📦 **GitHub Repository:**
+https://github.com/prajwalpg/resume-screening-agent
+
+---
+
+## 📌 Overview
+
+Recruiters often need to manually review dozens or hundreds of resumes for a single job opening.
+
+Traditional keyword-based screening can miss relevant candidates because different resumes may describe the same skill using different terminology. On the other hand, allowing an LLM to make the final hiring decision can make the process difficult to reproduce and audit.
+
+This project solves the problem using a **hybrid AI screening architecture**:
+
+```text
+                ┌──────────────────────────┐
+                │       Job Description    │
+                │      PDF / DOCX / TXT    │
+                └────────────┬─────────────┘
+                             │
+                             ▼
+                ┌──────────────────────────┐
+                │     JD Document Parser   │
+                │  Skills / Requirements   │
+                └────────────┬─────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────┐
+│                  RESUME PROCESSING                   │
+│                                                     │
+│  PDF ──┐                                            │
+│  DOCX ─┼──► Document Parser ──► Text Extraction     │
+│  TXT ──┘                                            │
+└────────────────────────┬────────────────────────────┘
+                         │
                          ▼
-                  MATCHING ENGINE
-   Required Skills 40% | Experience 25% | Education 15%
-        Semantic Similarity 10% | Preferred Skills 10%
-                         ▼
-                 Candidate Ranking
-                         ▼
-        ranked_candidates.csv / .json / screening_report.md
+                ┌──────────────────────────┐
+                │ Information Extraction   │
+                │ CandidateProfile /       │
+                │ JobProfile (Pydantic)    │
+                └────────────┬─────────────┘
+                             │
+             ┌───────────────┴────────────────┐
+             │                                │
+             ▼                                ▼
+   ┌───────────────────┐          ┌────────────────────┐
+   │ Skill Matching     │          │ Semantic Similarity│
+   │ Exact + Aliases    │          │ SentenceTransform. │
+   │ + Synonyms         │          │ / TF-IDF fallback │
+   └──────────┬────────┘          └─────────┬──────────┘
+              │                             │
+              └──────────────┬──────────────┘
+                             ▼
+                ┌──────────────────────────┐
+                │   Weighted Scoring      │
+                │                          │
+                │ Required Skills   40%   │
+                │ Experience        25%   │
+                │ Education         15%   │
+                │ Semantic Match    10%   │
+                │ Preferred Skills  10%   │
+                └────────────┬─────────────┘
+                             │
+                             ▼
+                ┌──────────────────────────┐
+                │ Candidate Ranking        │
+                │ + Confidence             │
+                │ + Skill Gaps             │
+                │ + Strengths              │
+                │ + Recommendation         │
+                └────────────┬─────────────┘
+                             │
+                             ▼
+        ┌────────────────────────────────────────┐
+        │ CSV / JSON / Markdown / SQLite / UI   │
+        └────────────────────────────────────────┘
 ```
 
-## Overview
+---
 
-| | |
-| --- | --- |
-| **Input** | 1 job description (TXT/PDF/DOCX) + a folder of resumes (PDF/DOCX/TXT) |
-| **Output** | `output/ranked_candidates.csv`, `output/ranked_candidates.json`, `output/screening_report.md`, SQLite DB |
-| **Interface** | Web App (`http://localhost:3000`) & REST API (`http://localhost:8000`) & CLI (`python main.py`) |
-| **Stack** | Next.js / Vite React + Tailwind CSS + FastAPI + Python 3.12 + PyMuPDF + Sentence Transformers |
-| **LLM** | Optional (OpenAI / Groq / Ollama — any OpenAI-compatible API) |
+# ✨ Key Features
 
-## Quick Start (Web Application)
+## 📄 Multi-Format Resume Parsing
 
-```bash
-# 1. Start FastAPI Backend (Port 8000)
-python -m uvicorn app.server:app --host 127.0.0.1 --port 8000
+Supports multiple resume formats:
 
-# 2. Start Web Frontend (Port 3000)
-cd frontend
-npm install
-npx vite --host 0.0.0.0 --port 3000
+* PDF
+* DOCX
+* TXT
 
-# 3. Open http://localhost:3000 in your browser!
+The parser extracts resume content and converts it into normalized text for downstream processing.
+
+### PDF
+
+Powered by **PyMuPDF (`fitz`)**.
+
+### DOCX
+
+Uses **python-docx** and supports both paragraphs and tables.
+
+### TXT
+
+Plain-text resumes are processed directly.
+
+---
+
+## 📋 Job Description Processing
+
+The system accepts a job description in:
+
+* PDF
+* DOCX
+* TXT
+
+The JD processor extracts:
+
+* Required skills
+* Preferred skills
+* Experience requirements
+* Education requirements
+* Job title
+* Relevant requirements
+
+---
+
+# 🧠 Intelligent Candidate Extraction
+
+Resume information is converted into structured Pydantic models.
+
+Candidate information can include:
+
+* Candidate name
+* Skills
+* Education
+* Experience
+* Projects
+* Certifications
+* Contact information
+
+The system provides two extraction approaches.
+
+### 1. Heuristic Extraction
+
+The default extraction method requires no API key.
+
+It uses:
+
+* Section detection
+* Skill taxonomy
+* Skill aliases
+* Regular expressions
+* Experience estimation
+* Degree detection
+
+### 2. LLM Extraction
+
+An optional LLM backend can be configured for more flexible extraction from unstructured resumes.
+
+The LLM is instructed to return structured JSON and avoid inventing candidate information.
+
+---
+
+# 🎯 Explainable Candidate Scoring
+
+A major design goal of this project is **explainability**.
+
+Instead of allowing an LLM to randomly assign a candidate score, the final score is calculated using deterministic weighted components.
+
+## Scoring Formula
+
+```text
+Final Score =
+    Required Skill Match × 40%
+  + Experience Match × 25%
+  + Education Match × 15%
+  + Semantic Similarity × 10%
+  + Preferred Skill Match × 10%
 ```
 
-Click **"Run 1-Click Demo (12 Sample Resumes)"** on the website to run an instant automated screening.
-
-
-## Problem Statement
-
-Manually screening dozens of resumes against a job description is slow,
-inconsistent and hard to audit. Generic keyword matching is brittle, while a
-pure-LLM score is a black box that can change between runs. This agent sits in
-the middle: **deterministic, explainable scoring does the ranking; NLP captures
-meaning beyond keywords; the LLM (optional) only extracts and explains.**
-
-## Features
-
-- **Multi-format parsing** — PDF (PyMuPDF), DOCX (python-docx), TXT.
-- **Structured extraction** — resumes and JDs become validated Pydantic models
-  (name, skills, education, experience, projects, certifications).
-- **Hybrid matching engine** — explicit skill matching + TF-IDF/transformer
-  semantic similarity, combined by a transparent weighted formula.
-- **Explainable results** — every candidate gets matched/missing skills, a
-  per-component score breakdown, a confidence level and a written reason.
-- **"Why not shortlisted?"** — rejected/review candidates get explicit,
-  itemised reasons.
-- **Batch processing** — the bundled dataset ships 12 resumes; the agent
-  processes any folder size with per-file progress and per-file error capture.
-- **Duplicate detection** — identical resumes (candidate_11 in the sample
-  data) are flagged, not silently double-counted.
-- **Bias protection** — contact details are stripped before scoring and
-  protected attributes (gender, age, photo, religion, caste, marital status,
-  address) are excluded from all ranking logic.
-- **Works without an LLM** — heuristic extractors and template explanations
-  make the agent fully runnable offline; add API keys to upgrade extraction
-  and explanations, never the scores.
-
-## Tech Stack
-
-| Component | Technology |
-| --- | --- |
-| Language | Python 3.9+ |
-| PDF parsing | PyMuPDF (fitz) |
-| DOCX parsing | python-docx |
-| Semantic similarity | Sentence Transformers (`all-MiniLM-L6-v2`), TF-IDF fallback |
-| Skill matching | Curated taxonomy + alias/synonym maps (deterministic) |
-| Data validation | Pydantic |
-| Data output | Pandas (CSV), JSON, Markdown |
-| LLM (optional) | OpenAI SDK against OpenAI / Groq / Ollama |
-| Testing | Pytest (29 tests) |
-
-## How It Works
-
-### 1. Resume Parsing
-`app/parser` converts any supported file into plain text. PDF text is
-extracted page-by-page with PyMuPDF; DOCX paragraphs *and* tables are read
-with python-docx; TXT is read directly. Unsupported extensions fail fast with
-a clear error.
-
-### 2. Information Extraction
-`app/extraction` converts raw text into structured profiles
-(`CandidateProfile`, `JobProfile`). Two interchangeable backends:
-
-- **LLM backend** — a strict JSON-only prompt ("do not invent information")
-  parsed and validated into Pydantic models.
-- **Heuristic backend** (default, zero-config) — section splitting, a curated
-  skill taxonomy with alias resolution, regex for email/phone/degree lines,
-  and a two-signal experience estimator: explicit "N years of experience"
-  statements plus the union of employment date ranges *inside the work
-  experience section only* (education years are never counted as work).
-
-### 3. Skill Matching
-Required and candidate skills are normalised (lowercase + aliases, e.g.
-"JS" → "javascript"), then matched via exact canonical equality, synonym
-groups (e.g. Postman / Rest Assured count as evidence for "API Testing") and
-substring containment for multi-word skills. The score is the transparent
-fraction `matched / required`, and the matched/missing lists keep the JD's
-original wording for the reports.
-
-### 4. Semantic Similarity
-`SimilarityEngine` embeds the JD and every resume with
-**Sentence Transformers `all-MiniLM-L6-v2`** and computes cosine similarity.
-If the model cannot be installed/downloaded (offline machines, CI), the engine
-automatically falls back to **TF-IDF + cosine similarity** (scikit-learn) —
-weaker on paraphrase, but deterministic and dependency-light. The active
-backend is printed during the run and recorded in every report.
-
-### 5. Candidate Scoring
-```
-FINAL SCORE = Required Skill Match  x 40%
-            + Experience Match      x 25%   (candidate_years / required_years, capped at 1.0)
-            + Education Match       x 15%   (field match 1.0 / related degree 0.6 / unknown 0.5)
-            + Semantic Similarity   x 10%
-            + Preferred Skill Match x 10%
-```
-Experience gives proportional credit below the bar and saturates above it.
-A missing education field is neutral (0.5) rather than punitive.
-
-### 6. Ranking
-Results are sorted by score (name as a stable tie-breaker) and mapped to
-recommendations:
-
-| Score | Recommendation |
-| --- | --- |
-| >= 85 | STRONG SHORTLIST |
-| 70 – 84 | SHORTLIST |
-| 55 – 69 | REVIEW |
-| < 55 | REJECT |
-
-A **confidence** level (HIGH / MEDIUM / LOW) reflects signal agreement:
-final score, semantic similarity and the required-skill match ratio.
-
-### 7. Explanation
-For every candidate the agent produces strengths, skill gaps and a reason.
-With an LLM configured, the *calculated* scores are sent to the model with the
-instruction "do NOT change the calculated score or recommendation" and it
-writes the narrative; without an LLM, a deterministic template produces the
-same structure. Review and reject candidates additionally get an explicit
-**"Why not shortlisted?"** breakdown.
-
-## Scoring Method
-
-Weights live in `app/utils/config.py` and must sum to 1.0:
+### Weight Configuration
 
 ```python
 WEIGHTS = {
@@ -180,230 +201,1154 @@ WEIGHTS = {
 }
 ```
 
-## Installation
+The weights are configurable in:
+
+```text
+app/utils/config.py
+```
+
+---
+
+# 📊 Candidate Recommendations
+
+Candidates are automatically categorized based on their final score.
+
+| Score | Recommendation      |
+| ----: | ------------------- |
+|  ≥ 85 | 🟢 STRONG SHORTLIST |
+| 70–84 | 🟢 SHORTLIST        |
+| 55–69 | 🟡 REVIEW           |
+|  < 55 | 🔴 REJECT           |
+
+The system also calculates a confidence level:
+
+* HIGH
+* MEDIUM
+* LOW
+
+Confidence is based on agreement between multiple screening signals.
+
+---
+
+# 🔍 Skill Matching
+
+Candidate skills are normalized before comparison.
+
+For example:
+
+```text
+JS → JavaScript
+Postman → API Testing evidence
+Rest Assured → API Testing evidence
+```
+
+The matching engine supports:
+
+* Exact skill matching
+* Alias resolution
+* Synonym groups
+* Multi-word skill matching
+* Required skill matching
+* Preferred skill matching
+
+The report preserves the original terminology used in the job description.
+
+Example:
+
+```text
+Required Skills
+
+✓ Python
+✓ Selenium
+✓ API Testing
+✓ SQL
+✗ Git
+```
+
+---
+
+# 🧬 Semantic Similarity
+
+The project uses NLP embeddings to identify semantic relationships between resumes and job descriptions.
+
+Primary model:
+
+```text
+Sentence Transformers
+all-MiniLM-L6-v2
+```
+
+The system calculates cosine similarity between the job description and candidate resume.
+
+This helps identify cases where the candidate uses different wording for related experience.
+
+For example:
+
+```text
+JD:
+"Selenium automation testing"
+
+Resume:
+"Built automated UI test scripts using Selenium WebDriver"
+```
+
+Keyword matching alone may be limited, while semantic similarity can recognize the relationship.
+
+---
+
+# 🔄 TF-IDF Fallback
+
+If Sentence Transformers cannot be installed or the model cannot be downloaded, the system automatically falls back to:
+
+```text
+TF-IDF + Cosine Similarity
+```
+
+This makes the project more resilient in:
+
+* Offline environments
+* CI/CD environments
+* Lightweight deployments
+
+The active similarity backend is reported during execution.
+
+---
+
+# 🤖 Optional LLM Integration
+
+The system can work completely without an LLM.
+
+However, an LLM can be enabled for:
+
+* Structured resume extraction
+* Job description extraction
+* Natural-language candidate explanations
+* Strength generation
+* Skill-gap explanations
+
+Supported providers include OpenAI-compatible APIs such as:
+
+* OpenAI
+* Groq
+* Ollama
+* Custom OpenAI-compatible endpoints
+
+### Important Design Principle
+
+The LLM **does not determine the final candidate score**.
+
+Instead:
+
+```text
+Deterministic Engine
+        │
+        ├── Calculates Score
+        ├── Calculates Ranking
+        └── Determines Recommendation
+                    │
+                    ▼
+                  LLM
+                    │
+                    └── Generates Explanation
+```
+
+This keeps candidate ranking reproducible and auditable.
+
+---
+
+# 🛡️ Bias Protection
+
+The system is designed to avoid using protected personal attributes during ranking.
+
+The following attributes are excluded from candidate scoring:
+
+* Gender
+* Age
+* Photograph
+* Religion
+* Caste
+* Marital status
+* Address
+
+Contact information is removed before semantic analysis.
+
+The ranking logic focuses on job-relevant signals such as:
+
+* Skills
+* Experience
+* Education
+* Semantic relevance
+
+> ⚠️ This system is a recruitment screening aid and should not replace human hiring decisions.
+
+---
+
+# ♻️ Duplicate Resume Detection
+
+The system detects duplicate resumes during batch processing.
+
+Identical resumes are flagged rather than silently counted multiple times.
+
+Example:
+
+```text
+candidate_11.pdf
+Possible duplicate of candidate_02.pdf
+```
+
+This prevents duplicate candidates from artificially affecting ranking results.
+
+---
+
+# 📦 Batch Resume Screening
+
+The agent can process multiple resumes from a directory.
+
+Example:
+
+```text
+data/resumes/
+
+├── candidate_01.pdf
+├── candidate_02.pdf
+├── candidate_03.docx
+├── candidate_04.pdf
+├── candidate_05.docx
+└── candidate_06.txt
+```
+
+Each candidate is processed independently.
+
+The system provides:
+
+* Per-file processing status
+* Extraction result
+* Candidate score
+* Recommendation
+* Error capture
+* Final ranking
+
+---
+
+# 🖥️ Web Application
+
+The project includes a browser-based frontend built with:
+
+* React
+* Vite
+* Tailwind CSS
+
+The frontend provides an interface for running the resume screening workflow.
+
+The backend exposes the screening functionality through a FastAPI application.
+
+### Application Architecture
+
+```text
+React + Vite Frontend
+        │
+        │ HTTP / REST
+        ▼
+FastAPI Backend
+        │
+        ▼
+Screening Agent
+        │
+        ├── Parser
+        ├── Extraction
+        ├── Matching
+        ├── Similarity
+        ├── Scoring
+        └── Reporting
+```
+
+---
+
+# 🔌 REST API
+
+The backend is implemented using **FastAPI**.
+
+Default development server:
+
+```text
+http://localhost:8000
+```
+
+API documentation is available through FastAPI's automatic documentation interface when the server is running:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+# 🖥️ CLI
+
+The project also provides a command-line interface.
+
+Run the bundled sample:
 
 ```bash
-# 1. Create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. (Optional) configure an LLM
-cp .env.example .env              # then edit .env
+python main.py
 ```
 
-> **Note:** `sentence-transformers` pulls in PyTorch (~2 GB). If that is a
-> problem, comment the line out of `requirements.txt` — the agent
-> automatically falls back to TF-IDF similarity and stays fully functional.
-
-## Environment Variables
-
-All optional — the agent runs without any of them:
-
-| Variable | Purpose |
-| --- | --- |
-| `LLM_PROVIDER` | `openai` \| `groq` \| `ollama` \| custom |
-| `LLM_MODEL` | Model name (e.g. `gpt-4o-mini`, `llama-3.3-70b-versatile`, `llama3.2`) |
-| `LLM_API_KEY` | API key (not needed for Ollama) |
-| `LLM_BASE_URL` | Override the provider's default endpoint |
-
-## Running the Agent
+Run with a custom job description:
 
 ```bash
-python main.py                              # bundled sample JD + 12 sample resumes
-python main.py data/jd/my_jd.txt            # custom job description
-python main.py my_jd.txt my_resume_folder   # custom JD + resume folder
-pytest                                      # run the test suite (29 tests)
-python scripts/generate_sample_data.py      # regenerate the sample dataset
+python main.py data/jd/my_jd.txt
 ```
 
-## Sample Input
+Run with a custom job description and resume directory:
 
-The bundled dataset (`data/`) contains a **Software Test Automation Engineer**
-JD (required: Python, Selenium, API Testing, SQL, Git; preferred: Pytest,
-Jenkins, Docker; minimum 1 year experience; CS/IT education) and **12 resumes
-in mixed formats** deliberately spanning the full spectrum: strong automation
-engineers, a manual tester, adjacent Java testers, a backend developer, a
-frontend developer, a fresher, and one exact duplicate (candidate_11 =
-candidate_02, used to demonstrate duplicate detection).
-
-## Sample Output
-
-Actual console output from this repository:
-
-```
-Job profile: Software Test Automation Engineer
-Required skills: Python, SQL, Selenium, API Testing, Git
-Preferred skills: Pytest, Jenkins, Docker
-
-[1/12] candidate_01.pdf ✓ -> Priya Sharma (heuristic)
-...
-[12/12] candidate_12.txt ✓ -> Karthik Menon (heuristic)
-
-================ FINAL RANKING ================
-Rank  Candidate            Score    Recommendation    Confidence
-----------------------------------------------------------------
-1     Priya Sharma         93.7%    STRONG SHORTLIST  HIGH
-2     Rahul Kumar          90.2%    STRONG SHORTLIST  HIGH
-3     Rahul Kumar          90.2%    STRONG SHORTLIST  HIGH
-4     Divya Nair           84.4%    SHORTLIST         MEDIUM
-5     Sneha Reddy          81.5%    SHORTLIST         MEDIUM
-6     Ananya Rao           78.0%    SHORTLIST         MEDIUM
-7     Meera Iyer           65.9%    REVIEW            MEDIUM
-8     Kiran Patel          65.7%    REVIEW            MEDIUM
-9     Karthik Menon        62.5%    REVIEW            MEDIUM
-10    Arjun Singh          60.4%    REVIEW            MEDIUM
-11    Vikram Joshi         42.5%    REJECT            LOW
-12    Rohit Verma          17.3%    REJECT            LOW
-----------------------------------------------------------------
+```bash
+python main.py my_jd.txt my_resume_folder
 ```
 
-Excerpt from `screening_report.md`:
+---
 
-```
-### #2 Rahul Kumar — 90.2% (STRONG SHORTLIST, HIGH confidence)
+# 📁 Project Structure
 
-| Component           | Score |
-| ------------------- | ----- |
-| Required Skills     | 100%  |
-| Experience          | 100%  |
-| Education           | 100%  |
-| Semantic Similarity | 35%   |
-| Preferred Skills    | 67%   |
-
-Matched required skills: ✓ Python, ✓ SQL, ✓ Selenium, ✓ API Testing, ✓ Git
-Missing required skills: —
-Reason: Rahul Kumar demonstrates strong alignment with the role: 5/5 required
-skills matched, 4 years of relevant experience. Primary gap: none. Preferred
-skills add Pytest and Jenkins; Docker is the only gap.
-```
-
-## Evaluation
-
-The repository ships a 12-resume evaluation dataset and a pytest suite
-covering the scenarios below:
-
-| Scenario | Where / Result |
-| --- | --- |
-| Perfect candidate → > 85%, STRONG SHORTLIST | `tests/test_scoring.py` + Priya/Divya in dataset |
-| Good candidate → 70–85%, SHORTLIST | `tests/test_scoring.py` + Sneha/Ananya |
-| Weak candidate → < 55%, REJECT | `tests/test_scoring.py` + Rohit/Vikram |
-| Resume with no experience | candidate_09 (fresher) → experience component 0 |
-| Resume with missing skills | every REVIEW/REJECT candidate gets itemised gaps |
-| PDF with unusual formatting | generated PDFs via PyMuPDF parse cleanly |
-| DOCX | candidates 03, 05, 09 |
-| TXT | candidates 07, 12 |
-| 10+ resumes | `tests/test_agent.py` batch test |
-| Duplicate resumes | candidate_11 flagged "possible duplicate of candidate_02.pdf" |
-
-Run everything with `pytest -q` (29 tests, ~4 s).
-
-## Design Decisions
-
-1. **Hybrid architecture: rules + embeddings + (optional) LLM.**
-   *"I intentionally separated scoring from LLM reasoning. Deterministic
-   scoring makes the ranking reproducible and explainable, while the LLM is
-   used for structured extraction and natural-language reasoning. This
-   reduces the risk of letting an LLM arbitrarily decide candidate scores."*
-2. **Extraction is modelled explicitly** (Pydantic schemas) instead of
-   feeding raw text to the scorer — scoring stays auditable.
-3. **Skill matching never relies on embeddings alone.** Embeddings capture
-   topical similarity; the explicit matcher produces the audit trail
-   ("matched 5/5: Python, Selenium, ...").
-4. **Faithful display names** — matched/missing skills are shown exactly as
-   the JD words them ("API Testing"), not as internal canonical tokens.
-5. **Bias protection by construction** — only skills, experience and
-   education enter the scoring function; contact details are stripped before
-   semantic analysis and a policy note is embedded in every report.
-
-## Tradeoffs
-
-### Why Sentence Transformers?
-Embedding-based semantic similarity captures relationships between job
-requirements and resume content better than plain keyword matching
-("built UI test scripts" ≈ "Selenium automation"). `all-MiniLM-L6-v2` is
-small, fast and strong on short-text similarity.
-
-### Why a TF-IDF fallback?
-Torch + model download is heavy and can be impossible in offline/CI
-environments. The fallback keeps the system runnable everywhere; the active
-backend is always disclosed in reports so readers can weigh similarity
-numbers accordingly.
-
-### Why deterministic scoring?
-A weighted rule system makes rankings **reproducible** (same input → same
-score), **tunable** (recruiters can adjust weights) and **auditable** (every
-component is individually visible). Pure-LLM scoring fails all three.
-
-### Why use an LLM at all?
-Resume/JD text is messy; LLMs excel at messy extraction and at writing
-human-readable justifications. Constrained to JSON extraction and
-score-agnostic explanation, the LLM adds value without becoming the judge.
-
-### Why not fine-tune a model?
-No large labelled recruitment dataset is available for a short-horizon
-project, and a pre-trained embedding model already provides a strong
-baseline. Fine-tuning would add training complexity without a measurable
-target to beat.
-
-### Limitations
-- Extraction quality bounds everything: scanned/image-only PDFs need OCR
-  (not implemented), and unusual layouts can hide sections from heuristics.
-- The synonym/alias maps are curated, not learned — niche skills may need
-  entries added to `SKILL_TAXONOMY` / `SYNONYM_GROUPS`.
-- TF-IDF similarity is lexical; with the fallback active, semantic-similarity
-  numbers are conservative.
-- Experience years are estimated from text signals and can be noisy.
-- **This system is a screening aid, not a replacement for human hiring
-  decisions.** All recommendations should be reviewed by a human recruiter.
-
-## Future Improvements
-
-- OCR support (Tesseract) for scanned resumes.
-- Learning skill synonym groups from a corpus instead of curating them.
-- A thin FastAPI service wrapping `ScreeningAgent` for programmatic use.
-- Streamlit UI with drag-and-drop upload and per-candidate drill-down.
-- Calibration of weights/thresholds against recruiter decisions.
-
-## Project Structure
-
-```
+```text
 resume-screening-agent/
+│
 ├── app/
-│   ├── agent/            # ScreeningAgent: orchestration + reports
-│   ├── extraction/       # Resume/JD -> structured profiles (LLM + heuristics)
-│   ├── matching/         # Embeddings, skill matcher, weighted scoring
-│   ├── models/           # Pydantic schemas
-│   ├── parser/           # PDF / DOCX / TXT -> text
-│   └── utils/            # Config, taxonomy, LLM client, text helpers
+│   ├── agent/
+│   │   └── # Screening orchestration and reporting
+│   │
+│   ├── extraction/
+│   │   └── # Resume/JD information extraction
+│   │
+│   ├── matching/
+│   │   └── # Skill matching, embeddings and scoring
+│   │
+│   ├── models/
+│   │   └── # Pydantic data models
+│   │
+│   ├── parser/
+│   │   └── # PDF / DOCX / TXT parsing
+│   │
+│   └── utils/
+│       └── # Configuration, taxonomy and LLM utilities
+│
 ├── data/
-│   ├── jd/               # software_test_engineer.txt
-│   └── resumes/          # candidate_01..12 (PDF / DOCX / TXT)
-├── output/               # generated CSV / JSON / Markdown reports
+│   ├── jd/
+│   │   └── software_test_engineer.txt
+│   │
+│   └── resumes/
+│       └── # Sample candidate resumes
+│
+├── frontend/
+│   └── # React + Vite web application
+│
+├── output/
+│   └── # Generated screening reports
+│
 ├── scripts/
 │   └── generate_sample_data.py
-├── tests/                # pytest: parser, matching, scoring, e2e
-├── main.py               # CLI entry point
+│
+├── tests/
+│   └── # Automated test suite
+│
+├── main.py
+├── conftest.py
 ├── requirements.txt
 ├── .env.example
+├── Procfile
+├── render.yaml
+├── vercel.json
 └── README.md
 ```
 
-## Bias & Fairness Policy
+---
 
-Protected/personal attributes — gender, age, photograph, religion, caste,
-marital status, address — are **excluded from candidate scoring**. The
-pipeline only consumes skills, experience and education; contact details are
-removed before semantic analysis. Duplicate resumes are flagged rather than
-double-counted, and every verdict carries an explanation so a human can audit
-any decision.
+# ⚙️ Technology Stack
 
-## Author
+| Component           | Technology             |
+| ------------------- | ---------------------- |
+| Backend             | Python                 |
+| API                 | FastAPI                |
+| Frontend            | React + Vite           |
+| Styling             | Tailwind CSS           |
+| Data Validation     | Pydantic               |
+| PDF Processing      | PyMuPDF                |
+| DOCX Processing     | python-docx            |
+| NLP                 | Sentence Transformers  |
+| NLP Fallback        | TF-IDF / scikit-learn  |
+| Data Processing     | Pandas                 |
+| Output              | CSV / JSON / Markdown  |
+| Database            | SQLite                 |
+| LLM                 | OpenAI / Groq / Ollama |
+| Testing             | Pytest                 |
+| Frontend Deployment | Vercel                 |
+| Backend Deployment  | Render                 |
 
-Built as a demonstration of an explainable, reproducible AI screening agent.
-Replace this line with your name / GitHub profile.
-#   r e s u m e - s c r e e n i n g - a g e n t  
- #   r e s u m e - s c r e e n i n g - a g e n t  
- 
+---
+
+# 🚀 Installation
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/prajwalpg/resume-screening-agent.git
+```
+
+Navigate into the project:
+
+```bash
+cd resume-screening-agent
+```
+
+---
+
+# 🐍 2. Create a Virtual Environment
+
+### Windows
+
+```bash
+python -m venv venv
+```
+
+Activate:
+
+```bash
+venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+# 📦 3. Install Python Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 🔐 4. Configure Environment Variables
+
+Create a `.env` file from the example:
+
+### Windows
+
+```bash
+copy .env.example .env
+```
+
+### macOS / Linux
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` if you want to enable an LLM provider.
+
+Example:
+
+```env
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_API_KEY=your_api_key
+```
+
+All LLM variables are optional.
+
+The application can run without an API key using the heuristic extraction and deterministic explanation pipeline.
+
+---
+
+# ▶️ Running the Backend
+
+Start FastAPI:
+
+```bash
+python -m uvicorn app.server:app --host 127.0.0.1 --port 8000
+```
+
+Backend:
+
+```text
+http://localhost:8000
+```
+
+API documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+# ▶️ Running the Frontend
+
+Open another terminal:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start Vite:
+
+```bash
+npx vite --host 0.0.0.0 --port 3000
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# ⚡ Quick Demo
+
+The project includes sample data so that the screening workflow can be tested immediately.
+
+Run:
+
+```bash
+python main.py
+```
+
+The sample dataset contains:
+
+* A Software Test Automation Engineer job description
+* 12 candidate resumes
+* Multiple resume formats
+* Strong candidates
+* Moderate candidates
+* Weak candidates
+* A fresher
+* Different technical backgrounds
+* A duplicate resume
+
+---
+
+# 📊 Example Screening Result
+
+Example ranking:
+
+```text
+============================================================
+FINAL RANKING
+============================================================
+
+Rank  Candidate        Score     Recommendation
+------------------------------------------------------------
+1     Priya Sharma     93.7%     STRONG SHORTLIST
+2     Rahul Kumar      90.2%     STRONG SHORTLIST
+3     Rahul Kumar      90.2%     STRONG SHORTLIST
+4     Divya Nair       84.4%     SHORTLIST
+5     Sneha Reddy      81.5%     SHORTLIST
+6     Ananya Rao       78.0%     SHORTLIST
+7     Meera Iyer       65.9%     REVIEW
+8     Kiran Patel      65.7%     REVIEW
+9     Karthik Menon    62.5%     REVIEW
+10    Arjun Singh      60.4%     REVIEW
+11    Vikram Joshi     42.5%     REJECT
+12    Rohit Verma      17.3%     REJECT
+```
+
+---
+
+# 📄 Generated Outputs
+
+The system generates multiple output formats.
+
+### CSV
+
+```text
+output/ranked_candidates.csv
+```
+
+Useful for:
+
+* Recruiter review
+* Excel analysis
+* Candidate ranking
+* Reporting
+
+### JSON
+
+```text
+output/ranked_candidates.json
+```
+
+Useful for:
+
+* APIs
+* Integrations
+* Applications
+* Data pipelines
+
+### Markdown Report
+
+```text
+output/screening_report.md
+```
+
+Contains:
+
+* Candidate ranking
+* Score breakdown
+* Matched skills
+* Missing skills
+* Strengths
+* Skill gaps
+* Recommendation
+* Confidence
+* Explanation
+
+---
+
+# 🧪 Testing
+
+The repository includes an automated pytest suite.
+
+Run all tests:
+
+```bash
+pytest
+```
+
+Or:
+
+```bash
+pytest -q
+```
+
+The test suite covers:
+
+* Resume parsing
+* PDF processing
+* DOCX processing
+* TXT processing
+* Skill matching
+* Semantic similarity
+* Candidate scoring
+* Ranking
+* Missing skills
+* Duplicate detection
+* Batch processing
+* End-to-end screening
+
+---
+
+# 📈 Evaluation Scenarios
+
+The sample dataset is intentionally designed to test different candidate profiles.
+
+| Scenario                | Expected Result           |
+| ----------------------- | ------------------------- |
+| Excellent candidate     | STRONG SHORTLIST          |
+| Good candidate          | SHORTLIST                 |
+| Borderline candidate    | REVIEW                    |
+| Weak candidate          | REJECT                    |
+| Fresher                 | Low/zero experience score |
+| Missing required skills | Skill-gap explanation     |
+| Duplicate resume        | Duplicate warning         |
+| DOCX resume             | Successfully parsed       |
+| TXT resume              | Successfully parsed       |
+| PDF resume              | Successfully parsed       |
+| 10+ resumes             | Batch processing          |
+
+---
+
+# 🧠 Design Philosophy
+
+## Why Hybrid AI?
+
+The project deliberately combines three approaches:
+
+```text
+Rules
+  +
+NLP Embeddings
+  +
+Optional LLM
+```
+
+Each component has a specific responsibility.
+
+### Rules
+
+Provide:
+
+* Reproducibility
+* Transparency
+* Deterministic scoring
+* Auditable results
+
+### NLP
+
+Provides:
+
+* Semantic understanding
+* Better matching beyond exact keywords
+* Resume/JD similarity
+
+### LLM
+
+Provides:
+
+* Flexible information extraction
+* Natural-language explanations
+* Human-readable summaries
+
+---
+
+# 🔐 Why the LLM Does Not Control the Score
+
+A pure LLM-based recruitment system could produce different scores for the same candidate depending on:
+
+* Prompt changes
+* Model changes
+* Temperature
+* Context
+* Model updates
+
+This project separates **decision calculation** from **language generation**.
+
+```text
+                    ┌─────────────────┐
+                    │ Candidate Data  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                ┌────────────────────────┐
+                │ Deterministic Scoring  │
+                └───────────┬────────────┘
+                            │
+                    ┌───────┴────────┐
+                    │                │
+                    ▼                ▼
+                 Score          Recommendation
+                    │                │
+                    └───────┬────────┘
+                            ▼
+                     Optional LLM
+                            │
+                            ▼
+                     Explanation
+```
+
+This approach makes the screening pipeline easier to understand, test and audit.
+
+---
+
+# ⚖️ Limitations
+
+The current system has several limitations.
+
+### OCR
+
+Scanned/image-only PDFs are not currently supported by the standard text extraction pipeline.
+
+Future versions can integrate:
+
+```text
+Tesseract OCR
+```
+
+or another OCR engine.
+
+### Skill Taxonomy
+
+The skill taxonomy and synonym mappings are curated.
+
+Niche technologies may need to be added manually.
+
+### Experience Estimation
+
+Experience is estimated from resume text and employment date ranges, so unusual resume formats can affect accuracy.
+
+### Semantic Similarity
+
+TF-IDF fallback is less capable of understanding paraphrasing than transformer embeddings.
+
+### Human Review
+
+The system is designed as a **decision-support tool**, not an autonomous hiring replacement.
+
+---
+
+# 🔮 Future Improvements
+
+Planned improvements include:
+
+* [ ] OCR support for scanned resumes
+* [ ] More advanced resume layout detection
+* [ ] Automatic skill taxonomy expansion
+* [ ] Better experience extraction
+* [ ] Recruiter authentication
+* [ ] Candidate database dashboard
+* [ ] Interview question generation
+* [ ] Candidate comparison view
+* [ ] Recruiter feedback loop
+* [ ] Score calibration using historical hiring decisions
+* [ ] Advanced analytics dashboard
+* [ ] Email integration
+* [ ] Job portal integrations
+* [ ] Multi-language resume support
+* [ ] Improved explainability dashboard
+
+---
+
+# 👨‍💻 Use Cases
+
+This system can be used for:
+
+### Recruiters
+
+Quickly shortlist candidates from large resume collections.
+
+### HR Teams
+
+Standardize initial resume screening.
+
+### Startups
+
+Automate repetitive recruitment workflows.
+
+### Technical Hiring
+
+Compare resumes against technical job descriptions.
+
+### Academic Projects
+
+Demonstrate:
+
+* NLP
+* Generative AI
+* Embeddings
+* Information extraction
+* Explainable AI
+* Agentic workflows
+* Full-stack development
+
+---
+
+# 💡 Example Workflow
+
+```text
+1. Recruiter uploads Job Description
+                ↓
+2. Recruiter uploads multiple resumes
+                ↓
+3. System extracts resume text
+                ↓
+4. Candidate information is structured
+                ↓
+5. Required/preferred skills are identified
+                ↓
+6. Skills are normalized
+                ↓
+7. Semantic similarity is calculated
+                ↓
+8. Candidate score is calculated
+                ↓
+9. Candidates are ranked
+                ↓
+10. Skill gaps are identified
+                ↓
+11. Strengths are generated
+                ↓
+12. Hiring recommendation is produced
+                ↓
+13. Results are exported
+```
+
+---
+
+# 📊 Sample Score Breakdown
+
+Example candidate:
+
+```text
+Candidate: Rahul Kumar
+
+Required Skills       100%
+Experience            100%
+Education             100%
+Semantic Similarity    35%
+Preferred Skills       67%
+
+Final Score: 90.2%
+
+Recommendation:
+STRONG SHORTLIST
+
+Confidence:
+HIGH
+```
+
+The recruiter can also see:
+
+```text
+Matched Required Skills:
+✓ Python
+✓ SQL
+✓ Selenium
+✓ API Testing
+✓ Git
+
+Missing Required Skills:
+None
+
+Preferred Skills:
+✓ Pytest
+✓ Jenkins
+✗ Docker
+```
+
+---
+
+# 🧪 Regenerate Sample Data
+
+The repository includes a sample-data generation script.
+
+Run:
+
+```bash
+python scripts/generate_sample_data.py
+```
+
+This can regenerate the demonstration dataset used for testing the screening workflow.
+
+---
+
+# 📁 Custom Usage
+
+You can replace the bundled data with your own.
+
+Example:
+
+```text
+my-project/
+│
+├── job_description.pdf
+│
+└── resumes/
+    ├── resume1.pdf
+    ├── resume2.pdf
+    ├── resume3.docx
+    ├── resume4.pdf
+    └── resume5.txt
+```
+
+Then run:
+
+```bash
+python main.py job_description.pdf resumes/
+```
+
+---
+
+# 🔧 Configuration
+
+The scoring configuration can be customized in:
+
+```text
+app/utils/config.py
+```
+
+Example:
+
+```python
+WEIGHTS = {
+    "required_skills": 0.40,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic_similarity": 0.10,
+    "preferred_skills": 0.10,
+}
+```
+
+The total weights should equal:
+
+```text
+1.0
+```
+
+This makes it possible to customize the screening system for different recruitment requirements.
+
+---
+
+# 🌐 Deployment
+
+The repository includes deployment configuration for:
+
+### Frontend
+
+Vercel configuration:
+
+```text
+vercel.json
+```
+
+### Backend
+
+Render configuration:
+
+```text
+render.yaml
+Procfile
+```
+
+The frontend and backend can therefore be deployed independently.
+
+---
+
+# 🔑 Environment Variables
+
+All LLM-related environment variables are optional.
+
+| Variable       | Description                       |
+| -------------- | --------------------------------- |
+| `LLM_PROVIDER` | LLM provider                      |
+| `LLM_MODEL`    | Model name                        |
+| `LLM_API_KEY`  | API key                           |
+| `LLM_BASE_URL` | Custom OpenAI-compatible endpoint |
+
+Example:
+
+```env
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_API_KEY=your_api_key
+```
+
+For Ollama:
+
+```env
+LLM_PROVIDER=ollama
+LLM_MODEL=llama3.2
+```
+
+---
+
+# 🏗️ Architecture
+
+The project follows a modular architecture.
+
+```text
+                 USER
+                  │
+                  ▼
+        ┌───────────────────┐
+        │ React Web Frontend│
+        └─────────┬─────────┘
+                  │
+                  ▼
+        ┌───────────────────┐
+        │    FastAPI API    │
+        └─────────┬─────────┘
+                  │
+                  ▼
+        ┌───────────────────┐
+        │  Screening Agent  │
+        └─────────┬─────────┘
+                  │
+        ┌─────────┼─────────┐
+        │         │         │
+        ▼         ▼         ▼
+     Parser  Extraction  Matching
+        │         │         │
+        └─────────┼─────────┘
+                  ▼
+        ┌───────────────────┐
+        │ Similarity Engine │
+        └─────────┬─────────┘
+                  │
+                  ▼
+        ┌───────────────────┐
+        │ Scoring Engine    │
+        └─────────┬─────────┘
+                  │
+                  ▼
+        ┌───────────────────┐
+        │ Ranking & Reports │
+        └───────────────────┘
+```
+
+---
+
+# 🛠️ Engineering Highlights
+
+This project demonstrates practical implementation of:
+
+* Python
+* FastAPI
+* React
+* Vite
+* Tailwind CSS
+* NLP
+* Sentence Transformers
+* TF-IDF
+* Cosine Similarity
+* Pydantic
+* PDF parsing
+* DOCX parsing
+* REST APIs
+* SQLite
+* LLM integration
+* Deterministic scoring
+* Explainable AI
+* Batch processing
+* Automated testing
+* Frontend/backend deployment
+
+---
+
+# 📜 License
+
+This project is intended as an educational and demonstration project.
+
+Add your preferred open-source license to the repository if you plan to distribute or modify the project publicly.
+
+---
+
+# 👨‍💻 Author
+
+**Prajwal PG**
+
+AI/ML & Generative AI Developer
+
+GitHub:
+https://github.com/prajwalpg
+
+Project:
+https://github.com/prajwalpg/resume-screening-agent
+
+---
+
+# ⭐ Support
+
+If you find this project useful:
+
+⭐ Star the repository
+🍴 Fork the repository
+🐛 Report issues
+💡 Suggest improvements
+🤝 Contribute to the project
+
+---
+
+## 📌 Disclaimer
+
+This application provides automated resume analysis and candidate ranking for screening assistance.
+
+It should **not be used as the sole basis for employment decisions**. Recruiters and hiring teams should review candidate information and make final decisions using appropriate human judgment and organizational hiring policies.
